@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Tasty Paella</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700;900&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --img-h: 42dvh;
+  --body-h: calc(100dvh - 42dvh);
+}
+
+html { height: 100%; }
+
+body {
+  height: 100%;
+  background: #0a0a0a;
+  font-family: 'Montserrat', sans-serif;
+  overflow: hidden;
+  /* Use dynamic viewport height to account for browser chrome */
+  height: 100dvh;
+}
+
+/* ── CARD STACK ── */
+.stack {
+  width: 100%;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
+
+.card {
+  position: absolute;
+  inset: 0;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.42s cubic-bezier(0.77,0,0.18,1), opacity 0s 0.42s;
+  will-change: transform;
+}
+.card.active {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: all;
+  transition: transform 0.42s cubic-bezier(0.77,0,0.18,1), opacity 0s;
+}
+
+/* ── IMAGE SECTION — fixed 42vh ── */
+.c-img {
+  flex: 0 0 var(--img-h);
+  height: var(--img-h);
+  position: relative;
+  overflow: hidden;
+}
+
+.c-photo {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+  transition: transform 10s ease;
+}
+.card.active .c-photo { transform: scale(1.06); }
+
+/* gradient */
+.c-img::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    rgba(0,0,0,0.05) 0%,
+    rgba(0,0,0,0.0) 25%,
+    rgba(10,10,10,0.6) 72%,
+    #0a0a0a 100%);
+  pointer-events: none;
+}
+
+/* steam */
+.steam {
+  position: absolute; bottom: 22%; left: 50%;
+  transform: translateX(-50%);
+  width: 80px; height: 55px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1s ease 0.6s;
+  pointer-events: none;
+}
+.card.active .steam { opacity: 1; }
+.s-line {
+  position: absolute; bottom: 0; width: 3px; border-radius: 9px;
+  background: linear-gradient(to top, rgba(255,255,255,0.18), transparent);
+  animation: rise 3s ease-in-out infinite;
+}
+.s-line:nth-child(1){ left:14%; height:28px; animation-delay:0s; }
+.s-line:nth-child(2){ left:47%; height:42px; animation-delay:0.9s; }
+.s-line:nth-child(3){ left:74%; height:24px; animation-delay:1.6s; }
+@keyframes rise {
+  0%  { transform: translateY(0)    scaleX(1);   opacity: 0.4; }
+  100%{ transform: translateY(-44px) scaleX(2.2); opacity: 0;   }
+}
+
+/* badge top-left */
+.c-badge { position: absolute; top: 14px; left: 14px; z-index: 5; line-height: 1; }
+.b-logo  { font-family: 'Dancing Script', cursive; font-size: 11px; color: rgba(255,255,255,0.55); }
+.b-name  { font-family: 'Bebas Neue', sans-serif; font-size: 21px; color: #fff; letter-spacing: 1px; }
+
+/* counter top-right */
+.c-count {
+  position: absolute; top: 14px; right: 14px; z-index: 5;
+  font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35); letter-spacing: 2px;
+}
+.c-count em { color: var(--acc); font-style: normal; }
+
+/* title */
+.c-title { position: absolute; bottom: 0; left: 0; right: 0; z-index: 5; padding: 0 16px 8px; }
+.c-sub {
+  font-family: 'Dancing Script', cursive; font-size: 14px; color: var(--acc);
+  display: block; margin-bottom: -2px;
+  opacity: 0; transform: translateY(8px);
+  transition: all 0.45s ease 0.2s;
+}
+.card.active .c-sub { opacity: 1; transform: translateY(0); }
+.c-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 12vw, 68px);
+  line-height: 0.9; letter-spacing: 1.5px; color: #fff;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.9);
+  opacity: 0; transform: translateY(16px);
+  transition: all 0.5s cubic-bezier(0.22,1,0.36,1) 0.07s;
+}
+.card.active .c-name { opacity: 1; transform: translateY(0); }
+
+/* ── BODY SECTION — fills remaining space, scrollable ── */
+.c-body {
+  flex: 1 1 0;
+  min-height: 0;
+  background: #0a0a0a;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 16px calc(76px + env(safe-area-inset-bottom));
+  gap: 9px;
+}
+.c-body::-webkit-scrollbar { display: none; }
+
+.c-desc {
+  font-size: 11px; color: rgba(255,255,255,0.44); line-height: 1.52;
+  opacity: 0; transform: translateY(6px);
+  transition: all 0.45s ease 0.28s;
+}
+.card.active .c-desc { opacity: 1; transform: translateY(0); }
+
+.lbl {
+  font-size: 8.5px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.22); font-weight: 700; margin-bottom: 5px;
+}
+
+/* presentation tabs */
+.pres-row { display: flex; gap: 6px; }
+.p-tab {
+  flex: 1; background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.09);
+  border-radius: 10px; padding: 8px 5px;
+  cursor: pointer; text-align: center;
+  transition: all 0.18s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+.p-tab.sel { border-color: var(--acc); background: rgba(232,160,32,0.08); }
+.p-tab-icon { font-size: 16px; display: block; }
+.p-tab-name { font-size: 10px; font-weight: 700; color: #fff; display: block; margin-top: 2px; }
+.p-tab-sub  { font-size: 8.5px; color: rgba(255,255,255,0.28); display: block; }
+
+/* size pills */
+.sz-row { display: flex; gap: 5px; }
+.sz-pill {
+  flex: 1; background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.09);
+  border-radius: 10px; padding: 8px 4px;
+  cursor: pointer; text-align: center;
+  transition: all 0.18s ease;
+}
+.sz-pill.sel { border-color: var(--acc); background: rgba(232,160,32,0.08); }
+.sz-name  { display: block; font-size: 10px; font-weight: 700; color: #fff; }
+.sz-pax   { display: block; font-size: 8.5px; color: rgba(255,255,255,0.32); margin-top: 1px; }
+.sz-price { display: block; font-size: 13px; font-weight: 900; color: var(--acc); margin-top: 4px; }
+.sz-tax   { font-size: 7.5px; color: rgba(255,255,255,0.25); font-weight: 400; }
+
+/* delivery info */
+.del-bar {
+  display: flex; align-items: center; gap: 7px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 9px; padding: 7px 10px;
+}
+.del-icon { font-size: 13px; flex-shrink: 0; }
+.del-txt  { font-size: 9px; color: rgba(255,255,255,0.35); line-height: 1.4; }
+.del-txt strong { color: rgba(255,255,255,0.6); font-weight: 700; }
+
+/* WhatsApp button */
+.wa-btn {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  background: #25D366; color: #fff;
+  font-family: 'Montserrat', sans-serif; font-size: 13px; font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 14px 18px;
+  border-radius: 12px; border: none; cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(37,211,102,0.28);
+  transition: all 0.18s ease;
+  /* Make sure it's always visible */
+  flex-shrink: 0;
+  margin-top: auto;
+}
+.wa-btn:active { opacity: 0.88; transform: scale(0.98); }
+
+/* ── NAV ── */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 100;
+  pointer-events: none;
+  display: flex; justify-content: space-between; align-items: flex-end;
+  padding: 0 16px calc(18px + env(safe-area-inset-bottom));
+}
+.nav-btn {
+  pointer-events: all;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(10,10,10,0.82);
+  border: 1.5px solid rgba(255,255,255,0.14);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; color: #fff; cursor: pointer;
+  transition: all 0.18s ease;
+}
+.nav-btn:active { background: rgba(232,160,32,0.35); border-color: var(--acc, #E8A020); }
+.nav-btn.off { opacity: 0; pointer-events: none; }
+
+.dots { display: flex; gap: 5px; align-items: center; }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,0.15); transition: all 0.3s ease; }
+.dot.on { width: 14px; border-radius: 3px; background: #E8A020; }
+
+/* accent per card */
+.card[data-a="blue"]   { --acc: #4A9FD4; }
+.card[data-a="orange"] { --acc: #E8A020; }
+.card[data-a="red"]    { --acc: #E04428; }
+.card[data-a="green"]  { --acc: #4FB86A; }
+.card[data-a="gold"]   { --acc: #D4A820; }
+.card[data-a="brown"]  { --acc: #C08040; }
+.card[data-a="teal"]   { --acc: #3DB8A0; }
+</style>
+</head>
+<body>
+<div class="stack" id="stack"></div>
+<div class="nav">
+  <button class="nav-btn off" id="prev" onclick="go(-1)">&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="next" onclick="go(1)">&#8594;</button>
+</div>
+<script>
+const I={
+  
+};
+
+const P=[
+  {id:'seafood',        name:'SEAFOOD',           sub:'From the Ocean',    desc:'Spanish saffron rice with lobster broth, head-on prawns, peeled prawns, squid, octopus, and mussels.',                                                                          a:'blue'},
+  {id:'chicken_seafood',name:'CHICKEN & SEAFOOD',  sub:'Best Seller',       desc:'The crowd favorite — chicken, shrimp, mussels, and squid cooked in lobster broth. The most requested for family celebrations.',                                                  a:'orange'},
+  {id:'chicken_pork',   name:'CHICKEN & PORK',     sub:'Customer Favorite', desc:'Spanish saffron rice with chicken broth, chicken, pork, flat green beans, butter beans, and rosemary.',                                                                          a:'red'},
+  {id:'vegan',          name:'VEGAN',              sub:'Plant Based',       desc:'Red peppers, green beans, mushrooms, zucchini, butter beans, and rosemary in homemade vegetable broth.',                                                                          a:'green'},
+  {id:'chicken_veggies',name:'CHICKEN & VEGGIES',  sub:'Light & Fresh',     desc:'Chicken, red peppers, green beans, zucchini, mushrooms, and fresh rosemary with authentic Spanish saffron rice.',                                                                 a:'gold'},
+  {id:'country_pork',   name:'COUNTRY PORK',       sub:'Inland Spain',      desc:'Authentic wild flavor — saffron rice with pork, scallions, red peppers, mushrooms, and vegetable broth.',                                                                        a:'brown'},
+  {id:'valenciana',     name:'VALENCIANA',          sub:'World Award Winner',desc:'Named Winner of The Best International Paella in The World! Saffron rice, chicken, rabbit, flat green beans, butter beans, and rosemary.',                                       a:'teal'}
+];
+
+const SZ={
+  pan: [{n:'Small',p:'Feeds 4-6',$:130},{n:'Medium',p:'Feeds 8-10',$:210},{n:'Large',p:'Feeds 12-15',$:310}],
+  tray:[{n:'Small',p:'6 people', $:120},{n:'Medium',p:'10 people',  $:200},{n:'Large',p:'15 people',  $:300}]
+};
+const PR=[
+  {icon:'🥘',name:'Paella Pan', sub:'Traditional',key:'pan'},
+  {icon:'🫙',name:'Alum. Tray',sub:'Easy carryout',key:'tray'}
+];
+
+const ST=P.map(()=>({s:0,p:0}));
+let cur=0,anim=false;
+const stack=document.getElementById('stack');
+const dots=document.getElementById('dots');
+
+P.forEach((p,i)=>{
+  const c=document.createElement('div');
+  c.className='card'+(i===0?' active':'');
+  c.dataset.a=p.a;
+  c.innerHTML=`
+    <div class="c-img">
+      <img class="c-photo" src="${I[p.id]}" alt="${p.name}" loading="${i===0?'eager':'lazy'}">
+      <div class="steam"><div class="s-line"></div><div class="s-line"></div><div class="s-line"></div></div>
+      <div class="c-badge"><div class="b-logo">tasty</div><div class="b-name">Paella</div></div>
+      <div class="c-count"><em>${i+1}</em> / ${P.length}</div>
+      <div class="c-title">
+        <span class="c-sub">${p.sub}</span>
+        <div class="c-name">${p.name}</div>
+      </div>
+    </div>
+    <div class="c-body">
+      <p class="c-desc">${p.desc}</p>
+      <div>
+        <div class="lbl">Presentation</div>
+        <div class="pres-row" id="pr-${i}">
+          ${PR.map((r,ri)=>`<div class="p-tab${ri===0?' sel':''}" onclick="sp(${i},${ri})"><span class="p-tab-icon">${r.icon}</span><span class="p-tab-name">${r.name}</span><span class="p-tab-sub">${r.sub}</span></div>`).join('')}
+        </div>
+      </div>
+      <div>
+        <div class="lbl">Size</div>
+        <div class="sz-row" id="sz-${i}">
+          ${SZ.pan.map((s,si)=>`<div class="sz-pill${si===0?' sel':''}" onclick="ss(${i},${si})"><span class="sz-name">${s.n}</span><span class="sz-pax" id="px-${i}-${si}">${s.p}</span><span class="sz-price" id="pr-${i}-${si}">$${s.$}<span class="sz-tax"> +tax</span></span></div>`).join('')}
+        </div>
+      </div>
+      <div class="del-bar">
+        <span class="del-icon">🚗</span>
+        <div class="del-txt"><strong>Delivery from $35</strong> · Pickup: 2100 N Greenville Ave Ste 800, Richardson TX 75082</div>
+      </div>
+      <a class="wa-btn" id="wa-${i}" href="#" target="_blank" rel="noopener" onclick="wа(${i})">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        Order on WhatsApp
+      </a>
+    </div>`;
+  stack.appendChild(c);
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' on':'');
+  d.id='d'+i;
+  dots.appendChild(d);
+});
+
+function sp(ci,pi){
+  ST[ci].p=pi;
+  document.querySelectorAll(`#pr-${ci} .p-tab`).forEach((e,j)=>e.classList.toggle('sel',j===pi));
+  SZ[PR[pi].key].forEach((s,si)=>{
+    const pe=document.getElementById(`px-${ci}-${si}`);
+    const re=document.getElementById(`pr-${ci}-${si}`);
+    if(pe) pe.textContent=s.p;
+    if(re) re.innerHTML=`$${s.$}<span class="sz-tax"> +tax</span>`;
+  });
+  ST[ci].s=0;
+  document.querySelectorAll(`#sz-${ci} .sz-pill`).forEach((e,j)=>e.classList.toggle('sel',j===0));
+}
+
+function ss(ci,si){
+  ST[ci].s=si;
+  document.querySelectorAll(`#sz-${ci} .sz-pill`).forEach((e,j)=>e.classList.toggle('sel',j===si));
+}
+
+function wа(idx){
+  const p=P[idx],s=ST[idx],k=PR[s.p].key,pn=PR[s.p].name,sz=SZ[k][s.s];
+  const m=encodeURIComponent(`🥘 *Order – Tasty Paella*\n\n• Paella: ${p.name}\n• Presentation: ${pn}\n• Size: ${sz.n} (${sz.p})\n• Price: $${sz.$} + tax\n\nPlease confirm my order! 🙏`);
+  document.getElementById(`wa-${idx}`).href=`https://wa.me/14696149868?text=${m}`;
+}
+
+function go(dir){
+  if(anim) return;
+  const nx=cur+dir;
+  if(nx<0||nx>=P.length) return;
+  anim=true;
+  const cs=document.querySelectorAll('.card');
+  const cc=cs[cur],nc=cs[nx];
+  nc.style.cssText=`transition:none;transform:translateX(${dir>0?'100%':'-100%'});opacity:1;pointer-events:none;`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    nc.style.cssText='transition:transform 0.42s cubic-bezier(0.77,0,0.18,1);transform:translateX(0);opacity:1;pointer-events:none;';
+    cc.style.cssText=`transition:transform 0.42s cubic-bezier(0.77,0,0.18,1);transform:translateX(${dir>0?'-100%':'100%'});opacity:1;`;
+    setTimeout(()=>{
+      cc.classList.remove('active'); cc.style.cssText='';
+      nc.classList.add('active');   nc.style.cssText='';
+      document.getElementById('d'+cur).classList.remove('on');
+      cur=nx;
+      document.getElementById('d'+cur).classList.add('on');
+      upNav(); anim=false;
+    },430);
+  }));
+}
+
+function upNav(){
+  document.getElementById('prev').classList.toggle('off',cur===0);
+  document.getElementById('next').classList.toggle('off',cur===P.length-1);
+}
+
+let tx=0;
+stack.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+stack.addEventListener('touchend',e=>{if(Math.abs(e.changedTouches[0].clientX-tx)>48) go(e.changedTouches[0].clientX-tx<0?1:-1);},{passive:true});
+
+upNav();
+</script>
+</body>
+</html>
